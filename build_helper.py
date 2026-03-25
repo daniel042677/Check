@@ -1,15 +1,19 @@
 """
 build_helper.py - PyInstaller 打包輔助腳本
-
-用途：
-  python build_helper.py install      安裝套件
-  python build_helper.py build        偵錯打包（有 console）
-  python build_helper.py release      正式打包（無 console）
 """
 import sys
 import os
 import subprocess
+import platform
 from pathlib import Path
+
+# ─── 環境鎖定檢查 (避免 Python 3.14 等不相容版本) ───
+if sys.version_info[:2] != (3, 12):
+    print(f"\n[❌ 錯誤] 環境不相容！")
+    print(f"目前使用的 Python 版本為: {platform.python_version()}")
+    print(f"本專案嚴格要求使用 Python 3.12.x 進行打包，以避免 C-ABI 與 PyQt6 的相容性問題。")
+    print(f"請切換至 Python 3.12 的虛擬環境後再試。")
+    sys.exit(1)
 
 HERE = Path(__file__).parent
 APP_NAME = "支票查詢系統"
@@ -75,7 +79,6 @@ coll = COLLECT(
 )
 """
 
-
 def write_spec(debug_mode=True):
     spec_text = SPEC_TEMPLATE.format(
         main_py=str(HERE / 'main.py').replace('\\', '/'),
@@ -91,7 +94,6 @@ def write_spec(debug_mode=True):
     spec_path.write_text(spec_text, encoding='utf-8')
     print(f'[OK] spec: {spec_path}')
 
-
 def install_packages():
     packages = ["PyQt6", "PyMuPDF", "winocr", "Pillow", "numpy", "pyinstaller"]
     print("[install] Installing packages...")
@@ -100,7 +102,6 @@ def install_packages():
         print("[ERROR] Package install failed")
         sys.exit(1)
     print("[OK] Packages installed")
-
 
 def build(debug_mode=True):
     write_spec(debug_mode=debug_mode)
@@ -126,7 +127,6 @@ def build(debug_mode=True):
     else:
         print("\n[WARNING] exe not found")
 
-
 def main():
     if len(sys.argv) < 2:
         print("Usage:")
@@ -147,7 +147,6 @@ def main():
     else:
         print(f"[ERROR] Unknown: {cmd}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
